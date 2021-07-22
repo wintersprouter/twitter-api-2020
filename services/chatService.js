@@ -1,5 +1,6 @@
 const db = require('../models')
 const { Message, User } = db
+
 const chatService = {
   getHistoryMessage: async (req, res, callback) => {
     try {
@@ -24,7 +25,7 @@ const chatService = {
       historyMessage.status = 'success'
       return callback(historyMessage)
     } catch (err) {
-      next(err)
+      console.log(err)
     }
   }
 }
