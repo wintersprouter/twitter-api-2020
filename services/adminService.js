@@ -6,7 +6,7 @@ const { getUsersData } = organizeData
 const adminService = {
   getUsers: async (req, res, callback) => {
     try {
-      const users = await User.findAll({
+      let users = await User.findAll({
         include: [
           { model: Tweet, include: [Like] },
           { model: User, as: 'Followings' },
@@ -16,7 +16,7 @@ const adminService = {
         return callback({ status: 'error', message: 'Cannot find any users in db.' })
       }
       const usersData = await getUsersData(req, users)
-      // usersData.status = 'success'
+  
       return callback(usersData)
     } catch (err) {
       console.log(err)
