@@ -44,32 +44,21 @@ const TweetController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  postReply: async (req, res, next) => {
+  postReply: (req, res, next) => {
     // #swagger.tags = ['Replies']
     // #swagger.description = 'Post a reply.'
-    try {
-      const TweetId = req.params.tweet_id
-      const repliedTweet = await Tweet.findByPk(TweetId, { include: [User] })
-      if (!repliedTweet) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this tweet in db.' })
+    tweetService.postReply(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      const repliedTweetAuthor = repliedTweet.dataValues.User.dataValues.account
-      const { comment } = req.body
-      if (!comment) {
-        return res.status(400).json({ status: 'error', message: 'Please input comment.' })
+      if (data.status === 'bad request') {
+        return res.status(400).json(data)
       }
-      if (comment && !validator.isByteLength(comment, { min: 0, max: 50 })) {
-        return res.status(409).json({ status: 'error', message: 'Comment can\'t be more than 50 words.' })
+      if (data.status === 'conflict') {
+        return res.status(409).json(data)
       }
-      await Reply.create({
-        UserId: req.user.id,
-        TweetId,
-        comment
-      })
-      return res.status(200).json({ status: 'success', message: `You replied @${repliedTweetAuthor}'s tweet successfully.` })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   postLike: async (req, res, next) => {
     // #swagger.tags = ['Likes']

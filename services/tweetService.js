@@ -89,6 +89,31 @@ const tweetService = {
     } catch (err) {
       console.log(err)
     }
-  }
+  },
+  postReply: async (req, res, callback) => {
+    try {
+      const TweetId = req.params.tweet_id
+      const repliedTweet = await Tweet.findByPk(TweetId, { include: [User] })
+      if (!repliedTweet) {
+        return callback({ status: 'error', message: 'Cannot find this tweet in db.' })
+      }
+      const repliedTweetAuthor = repliedTweet.dataValues.User.dataValues.account
+      const { comment } = req.body
+      if (!comment) {
+        return callback({ status: 'bad request', message: 'Please input comment.' })
+      }
+      if (comment && !validator.isByteLength(comment, { min: 0, max: 50 })) {
+        return callback({ status: 'conflict', message: 'Comment can\'t be more than 50 words.' })
+      }
+      await Reply.create({
+        UserId: req.user.id,
+        TweetId,
+        comment
+      })
+      return callback({ status: 'success', message: `You replied @${repliedTweetAuthor}'s tweet successfully.` })
+    } catch (err) {
+      console.log(err)
+    }
+  },
 }
 module.exports = tweetService
