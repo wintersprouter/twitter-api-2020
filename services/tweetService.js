@@ -1,6 +1,8 @@
 const db = require('../models')
 const { Tweet, User, Like, Reply } = db
 const validator = require('validator')
+const organizeData = require('../utils/organizeData')
+const { getTweetData } = organizeData
 const tweetService = {
   getTweets: async (req, res, callback) => {
     try {
@@ -39,7 +41,7 @@ const tweetService = {
   getTweet: async (req, res, callback) => {
     try {
       const id = req.params.tweet_id
-      const tweet = await Tweet.findByPk(id,
+      let tweet = await Tweet.findByPk(id,
         {
           include: [
             User,
@@ -50,20 +52,11 @@ const tweetService = {
       if (!tweet) {
         return callback({ status: 'error', message: 'Cannot find this tweet in db.' })
       }
-      return callback({
-        status: 'success',
-        message: 'Get the tweet successfully',
-        id: tweet.id,
-        UserId: tweet.UserId,
-        description: tweet.description,
-        createdAt: tweet.createdAt,
-        account: tweet.User.account,
-        name: tweet.User.name,
-        avatar: tweet.User.avatar,
-        likedCount: tweet.Likes.length,
-        repliedCount: tweet.Replies.length,
-        isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
-      })
+      tweet = tweet.toJSON()
+      let tweetData = await getTweetData(req, tweet)
+      tweetData.status = 'success'
+      tweetData.message = 'Get the tweet successfully'
+      return callback(tweetData)
     } catch (err) {
       console.log(err)
     }
