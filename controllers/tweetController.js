@@ -1,42 +1,15 @@
-const db = require('../models')
-const { Tweet, User, Like, Reply } = db
-const validator = require('validator')
+const tweetService = require('../services/tweetService')
 
 const TweetController = {
-  getTweets: async (req, res, next) => {
+  getTweets: (req, res, next) => {
     // #swagger.tags = ['Tweets']
     // #swagger.description = 'Get all tweets data.'
-    try {
-      let tweets = await Tweet.findAll({
-        include: [
-          User,
-          Reply,
-          Like,
-          { model: User, as: 'LikedUsers' }
-        ],
-        order: [['createdAt', 'DESC']]
-      })
-      if (!tweets) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find any tweets in db.' })
+    tweetService.getTweets(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      tweets = tweets.map(tweet => {
-        return {
-          id: tweet.id,
-          UserId: tweet.UserId,
-          description: tweet.description,
-          createdAt: tweet.createdAt,
-          account: tweet.User.account,
-          name: tweet.User.name,
-          avatar: tweet.User.avatar,
-          likedCount: tweet.Likes.length,
-          repliedCount: tweet.Replies.length,
-          isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
-        }
-      })
-      return res.status(200).json(tweets)
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   getTweet: async (req, res, next) => {
     // #swagger.tags = ['Tweets']
