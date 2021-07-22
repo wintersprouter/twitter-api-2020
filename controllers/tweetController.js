@@ -60,30 +60,18 @@ const TweetController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  postLike: async (req, res, next) => {
+  postLike: (req, res, next) => {
     // #swagger.tags = ['Likes']
     // #swagger.description = 'Post a like.'
-    try {
-      const TweetId = req.params.id
-      const UserId = req.user.id
-      const likedTweet = await Tweet.findByPk(
-        TweetId, { include: [User] }
-      )
-      if (!likedTweet) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this tweet in db.' })
+    tweetService.postLike(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      const likedTweetAuthor = likedTweet.dataValues.User.dataValues.account
-      const liked = await Like.findOne({
-        where: { UserId, TweetId }
-      })
-      if (liked) {
-        return res.status(400).json({ status: 'error', message: 'You already liked this tweet.' })
+      if (data.status === 'bad request') {
+        return res.status(400).json(data)
       }
-      await Like.create({ UserId, TweetId })
-      return res.status(200).json({ status: 'success', message: `You liked @${likedTweetAuthor}'s tweet successfully.` })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   postUnlike: async (req, res, next) => {
     // #swagger.tags = ['Likes']
