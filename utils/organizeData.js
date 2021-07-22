@@ -45,5 +45,26 @@ module.exports = {
         avatar: reply.User.avatar
       }
     })
+  },
+  getUsersData: (req, users) => {
+    users = users.map(user => {
+      let likedCount = 0
+      user.Tweets.forEach(tweet => {
+        likedCount += tweet.Likes.length
+      })
+      return {
+        id: user.id,
+        account: user.account,
+        name: user.name,
+        avatar: user.avatar,
+        cover: user.cover,
+        tweetCount: user.Tweets.length,
+        likedCount,
+        followingCount: user.Followings.length,
+        followerCount: user.Followers.length
+      }
+    })
+    users.sort((a, b) => b.tweetCount - a.tweetCount)
+    return users
   }
 }
