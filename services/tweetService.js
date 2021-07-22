@@ -45,6 +45,24 @@ const tweetService = {
     } catch (err) {
       console.log(err)
     }
+  },
+  postTweet: async (req, res, callback) => {
+    try {
+      const { description } = req.body
+      if (!description) {
+        return callback({ status: 'error', message: 'Please input tweet.' })
+      }
+      if (description && !validator.isByteLength(description, { min: 0, max: 140 })) {
+        return callback({ status: 'conflict', message: 'Tweet can\'t be more than 140 words.' })
+      }
+      await Tweet.create({
+        UserId: req.user.id,
+        description
+      })
+      return callback({ status: 'success', message: 'The tweet was successfully created.' })
+    } catch (err) {
+      console.log(err)
+    }
   }
 
 }

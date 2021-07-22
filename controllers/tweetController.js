@@ -21,25 +21,18 @@ const TweetController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  postTweet: async (req, res, next) => {
+  postTweet: (req, res, next) => {
     // #swagger.tags = ['Tweets']
     // #swagger.description = 'Post a tweet.'
-    try {
-      const { description } = req.body
-      if (!description) {
-        return res.status(400).json({ status: 'error', message: 'Please input tweet.' })
+    tweetService.postTweet(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(400).json(data)
       }
-      if (description && !validator.isByteLength(description, { min: 0, max: 140 })) {
-        return res.status(409).json({ status: 'error', message: 'Tweet can\'t be more than 140 words.' })
+      if (data.status === 'conflict') {
+        return res.status(409).json(data)
       }
-      await Tweet.create({
-        UserId: req.user.id,
-        description
-      })
-      return res.status(200).json({ status: 'success', message: 'The tweet was successfully created.' })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   getReplies: async (req, res, next) => {
     // #swagger.tags = ['Replies']
