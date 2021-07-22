@@ -54,7 +54,7 @@ module.exports = (io) => {
         console.log('sendMessage socket.user', socket.user)
         try {
           if (data) {
-            let message = await Message.create({
+            const message = await Message.create({
               content: data,
               UserId: socket.userId,
               createdAt: Date.now()
@@ -62,15 +62,15 @@ module.exports = (io) => {
             // 傳送使用者和訊息
             console.log('message: ', message.toJSON())
             console.log('message content: ', data)
-            let createdMessage = message.toJSON()
-            let newInfo = {
+            const createdMessage = message.toJSON()
+            const newInfo = {
               id: createdMessage.id,
               UserId: socket.userId,
               content: data,
               createdAt: createdMessage.createdAt,
               account: socket.user.account,
               name: socket.user.name,
-              avatar: socket.user.avatar,
+              avatar: socket.user.avatar
             }
             console.log('newInfo', newInfo)
             io.emit('newMessage', newInfo)
