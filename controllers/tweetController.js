@@ -34,35 +34,15 @@ const TweetController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  getReplies: async (req, res, next) => {
+  getReplies: (req, res, next) => {
     // #swagger.tags = ['Replies']
     // #swagger.description = 'Get replies data.'
-    try {
-      let replies = await Reply.findAll({
-        where: { TweetId: req.params.tweet_id },
-        include: [User, { model: Tweet, include: User }],
-        order: [['createdAt', 'DESC']]
-      })
-      if (!replies) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find any replies in db.' })
+    tweetService.getReplies(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      replies = replies.map(reply => {
-        return {
-          id: reply.id,
-          UserId: reply.UserId,
-          TweetId: reply.TweetId,
-          tweetAuthorAccount: reply.Tweet.User.account,
-          comment: reply.comment,
-          createdAt: reply.createdAt,
-          commentAccount: reply.User.account,
-          name: reply.User.name,
-          avatar: reply.User.avatar
-        }
-      })
-      return res.status(200).json(replies)
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   postReply: async (req, res, next) => {
     // #swagger.tags = ['Replies']

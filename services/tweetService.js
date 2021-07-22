@@ -2,7 +2,7 @@ const db = require('../models')
 const { Tweet, User, Like, Reply } = db
 const validator = require('validator')
 const organizeData = require('../utils/organizeData')
-const { getTweetData, getTweetsData } = organizeData
+const { getTweetData, getTweetsData, getRepliesData } = organizeData
 const tweetService = {
   getTweets: async (req, res, callback) => {
     try {
@@ -63,7 +63,32 @@ const tweetService = {
     } catch (err) {
       console.log(err)
     }
+  },
+  getReplies: async (req, res, callback) => {
+    try {
+      const TweetId = await User.findOne({
+        where: {
+          id: req.params.tweet_id,
+          role: 'user'
+        }
+      })
+      if (!TweetId) {
+        return callback({ status: 'error', message: 'Cannot find this tweet in db.' })
+      }
+      const replies = await Reply.findAll({
+        where: { TweetId: req.params.tweet_id },
+        include: [User, { model: Tweet, include: User }],
+        order: [['createdAt', 'DESC']]
+      })
+      if (!replies) {
+        return callback({ status: 'error', message: 'Cannot find any replies in db.' })
+      }
+      const repliesData = await getRepliesData(req, replies)
+      repliesData.status = 'success'
+      return callback(repliesData)
+    } catch (err) {
+      console.log(err)
+    }
   }
-
 }
 module.exports = tweetService

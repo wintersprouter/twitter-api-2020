@@ -30,5 +30,20 @@ module.exports = {
         isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
       }
     })
+  },
+  getRepliesData: (req, replies) => {
+    return replies = replies.map(reply => {
+      return {
+        id: reply.id,
+        UserId: reply.UserId,
+        TweetId: reply.TweetId,
+        tweetAuthorAccount: reply.Tweet.User.account,
+        comment: reply.comment,
+        createdAt: reply.createdAt,
+        commentAccount: reply.User.account,
+        name: reply.User.name,
+        avatar: reply.User.avatar
+      }
+    })
   }
 }
