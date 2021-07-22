@@ -39,6 +39,18 @@ const adminService = {
     } catch (err) {
       console.log(err)
     }
+  },
+  deleteTweet: async (req, res, callback) => {
+    try {
+      const id = req.params.id
+      const tweet = await Tweet.findByPk(id, { include: [User] })
+      if (!tweet) { return callback({ status: 'error', message: 'This tweet doesn\'t exist!' }) }
+      const tweetAuthor = tweet.dataValues.User.dataValues.account
+      await tweet.destroy()
+      return callback({ status: 'success', message: `@${tweetAuthor}'s tweet has been deleted!` })
+    } catch (err) {
+      console.log(err)
+    }
   }
 }
 module.exports = adminService
