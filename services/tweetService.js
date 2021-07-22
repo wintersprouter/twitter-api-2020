@@ -2,11 +2,11 @@ const db = require('../models')
 const { Tweet, User, Like, Reply } = db
 const validator = require('validator')
 const organizeData = require('../utils/organizeData')
-const { getTweetData } = organizeData
+const { getTweetData, getTweetsData } = organizeData
 const tweetService = {
   getTweets: async (req, res, callback) => {
     try {
-      let tweets = await Tweet.findAll({
+      const tweets = await Tweet.findAll({
         include: [
           User,
           Reply,
@@ -18,22 +18,9 @@ const tweetService = {
       if (!tweets) {
         return callback({ status: 'error', message: 'Cannot find any tweets in db.' })
       }
-      tweets = tweets.map(tweet => {
-        return {
-          id: tweet.id,
-          UserId: tweet.UserId,
-          description: tweet.description,
-          createdAt: tweet.createdAt,
-          account: tweet.User.account,
-          name: tweet.User.name,
-          avatar: tweet.User.avatar,
-          likedCount: tweet.Likes.length,
-          repliedCount: tweet.Replies.length,
-          isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
-        }
-      })
-      tweets.status = 'success'
-      return callback(tweets)
+      const tweetsData = await getTweetsData(req, tweets)
+      tweetsData.status = 'success'
+      return callback(tweetsData)
     } catch (err) {
       console.log(err)
     }
@@ -53,7 +40,7 @@ const tweetService = {
         return callback({ status: 'error', message: 'Cannot find this tweet in db.' })
       }
       tweet = tweet.toJSON()
-      let tweetData = await getTweetData(req, tweet)
+      const tweetData = await getTweetData(req, tweet)
       tweetData.status = 'success'
       tweetData.message = 'Get the tweet successfully'
       return callback(tweetData)
