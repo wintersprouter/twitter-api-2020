@@ -135,8 +135,32 @@ const tweetService = {
       await Like.create({ UserId, TweetId })
       return callback({ status: 'success', message: `You liked @${likedTweetAuthor}'s tweet successfully.` })
     } catch (err) {
-      next(err)
+      console.log(err)
+    }
+  },
+  postUnlike: async (req, res, callback) => {
+    // #swagger.tags = ['Likes']
+    // #swagger.description = 'Post an unlike.'
+    try {
+      const TweetId = req.params.id
+      const UserId = req.user.id
+      const unlikedTweet = await Tweet.findByPk(
+        TweetId, { include: [User] }
+      )
+      if (!unlikedTweet) {
+        return callback({ status: 'error', message: 'Cannot find this tweet in db.' })
+      }
+      const unlikedTweetAuthor = unlikedTweet.dataValues.User.dataValues.account
+      const liked = await Like.findOne({
+        where: { UserId, TweetId }
+      })
+      if (!liked) { callback({ status: 'bad request', message: 'You never like this tweet before.' }) }
+      await liked.destroy()
+      return callback({ status: 'success', message: `You unliked ${unlikedTweetAuthor}'s tweet successfully.` })
+    } catch (err) {
+      console.log(err)
     }
   }
+
 }
 module.exports = tweetService

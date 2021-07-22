@@ -73,28 +73,18 @@ const TweetController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  postUnlike: async (req, res, next) => {
+  postUnlike: (req, res, next) => {
     // #swagger.tags = ['Likes']
     // #swagger.description = 'Post an unlike.'
-    try {
-      const TweetId = req.params.id
-      const UserId = req.user.id
-      const unlikedTweet = await Tweet.findByPk(
-        TweetId, { include: [User] }
-      )
-      if (!unlikedTweet) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this tweet in db.' })
+    tweetService.postUnlike(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      const unlikedTweetAuthor = unlikedTweet.dataValues.User.dataValues.account
-      const liked = await Like.findOne({
-        where: { UserId, TweetId }
-      })
-      if (!liked) { return res.status(400).json({ status: 'error', message: 'You never like this tweet before.' }) }
-      await liked.destroy()
-      return res.status(200).json({ status: 'success', message: `You unliked ${unlikedTweetAuthor}'s tweet successfully.` })
-    } catch (err) {
-      next(err)
-    }
+      if (data.status === 'bad request') {
+        return res.status(400).json(data)
+      }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   }
 }
 
