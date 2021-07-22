@@ -1,6 +1,8 @@
 module.exports = {
   getTweetData: (req, tweet) => {
     return {
+      status:'success',
+      message:'Get the tweet successfully',
       id: tweet.id,
       UserId: tweet.UserId,
       description: tweet.description,

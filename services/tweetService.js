@@ -41,8 +41,6 @@ const tweetService = {
       }
       tweet = tweet.toJSON()
       const tweetData = await getTweetData(req, tweet)
-      tweetData.status = 'success'
-      tweetData.message = 'Get the tweet successfully'
       return callback(tweetData)
     } catch (err) {
       console.log(err)
