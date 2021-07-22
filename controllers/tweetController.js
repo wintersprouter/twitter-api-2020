@@ -14,36 +14,12 @@ const TweetController = {
   getTweet: async (req, res, next) => {
     // #swagger.tags = ['Tweets']
     // #swagger.description = 'Get a tweet's data.'
-    try {
-      const id = req.params.tweet_id
-      const tweet = await Tweet.findByPk(id,
-        {
-          include: [
-            User,
-            Like,
-            Reply,
-            { model: User, as: 'LikedUsers' }]
-        })
-      if (!tweet) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this tweet in db.' })
+    tweetService.getTweet(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      return res.status(200).json({
-        status: 'success',
-        message: 'Get the tweet successfully',
-        id: tweet.id,
-        UserId: tweet.UserId,
-        description: tweet.description,
-        createdAt: tweet.createdAt,
-        account: tweet.User.account,
-        name: tweet.User.name,
-        avatar: tweet.User.avatar,
-        likedCount: tweet.Likes.length,
-        repliedCount: tweet.Replies.length,
-        isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
-      })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   postTweet: async (req, res, next) => {
     // #swagger.tags = ['Tweets']
