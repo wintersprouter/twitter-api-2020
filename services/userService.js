@@ -8,7 +8,7 @@ const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
 const { getSignInData, getCurrentUserData, getTopUsersData, getUserData } = organizeData
 const fromValidation = require('../utils/formValidation')
-const { checkUserInfoEdit, checkUserInfo } = fromValidation
+const { checkUserInfoEdit, checkUserInfo, checkUserProfileEdit } = fromValidation
 
 const uploadImg = path => {
   return new Promise((resolve, reject) => {
@@ -136,6 +136,46 @@ const userService = {
       }
       const userData = await getUserData(req, user)
       return callback(userData)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  editUserProfile: async (req, res, callback) => {
+    try {
+      const id = req.params.id
+      const { name, introduction } = req.body
+      const message = []
+      // only user himself allow to edit account
+      if (req.user.id !== Number(id)) {
+        return callback({ status: 'error: unauthorized', message: 'Permission denied.' })
+      }
+      // check this user is or not in db
+      const user = await User.findByPk(id)
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error: not found', message: 'Cannot find this user in db.' })
+      }
+      await checkUserProfileEdit(req, message)
+      if (message.length) {
+        return callback({ status: 'error: bad request', message })
+      }
+      const updateData = { name, introduction }
+      const { files } = req
+      const imgType = ['.jpg', '.jpeg', '.png']
+      if (files) {
+        imgur.setClientID(IMGUR_CLIENT_ID)
+        for (const file in files) {
+          const index = files[file][0].originalname.lastIndexOf('.')
+          const fileType = files[file][0].originalname.slice(index)
+          if (imgType.includes(fileType)) {
+            const img = await uploadImg(files[file][0].path)
+            updateData[file] = img.data.link
+          } else {
+            return callback({ status: 'error: bad request', message: `Image type of ${file} should be .jpg, .jpeg, .png .` })
+          }
+        }
+      }
+      await user.update(updateData)
+      return callback({ status: 'success', message: `Update ${name}'s profile successfully.` })
     } catch (err) {
       console.log(err)
     }

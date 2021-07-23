@@ -68,58 +68,21 @@ const userController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  editUserProfile: async (req, res, next) => {
+  editUserProfile: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Edit user's profile.'
-    try {
-      const id = req.params.id
-      const { name, introduction } = req.body
-      const message = []
-      // only user himself allow to edit account
-      if (req.user.id !== Number(id)) {
-        return res.status(401).json({ status: 'error', message: 'Permission denied.' })
+    userService.editUserProfile(req, res, data => {
+      if (data.status === 'error: bad request') {
+        return res.status(400).json(data)
       }
-      // check this user is or not in db
-      const user = await User.findByPk(id)
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+      if (data.status === 'error: not found') {
+        return res.status(404).json(data)
       }
-      // check Name is required
-      if (!name) {
-        message.push('Name is required.')
+      if (data.status === 'error: unauthorized') {
+        return res.status(401).json(data)
       }
-      // check name length and type
-      if (name && !validator.isByteLength(name, { min: 0, max: 50 })) {
-        message.push('Name can not be longer than 50 characters.')
-      }
-      // check introduction length and type
-      if (introduction && !validator.isByteLength(introduction, { min: 0, max: 160 })) {
-        message.push('Introduction can not be longer than 160 characters.')
-      }
-      if (message.length) {
-        return res.status(400).json({ status: 'error', message })
-      }
-      const updateData = { name, introduction }
-      const { files } = req
-      const imgType = ['.jpg', '.jpeg', '.png']
-      if (files) {
-        imgur.setClientID(IMGUR_CLIENT_ID)
-        for (const file in files) {
-          const index = files[file][0].originalname.lastIndexOf('.')
-          const fileType = files[file][0].originalname.slice(index)
-          if (imgType.includes(fileType)) {
-            const img = await uploadImg(files[file][0].path)
-            updateData[file] = img.data.link
-          } else {
-            return res.status(400).json({ status: 'error', message: `Image type of ${file} should be .jpg, .jpeg, .png .` })
-          }
-        }
-      }
-      await user.update(updateData)
-      return res.status(200).json({ status: 'success', message: `Update ${name}'s profile successfully.` })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
 
   getUserTweets: async (req, res, next) => {

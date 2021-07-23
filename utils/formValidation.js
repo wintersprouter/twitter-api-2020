@@ -68,5 +68,21 @@ async function checkUserInfoEdit (req, message) {
     console.log(err)
   }
 }
+function checkUserProfileEdit (req, message) {
+  const { name, introduction } = req.body
+  // check Name is required
+  if (!name) {
+    message.push('Name is required.')
+  }
+  // check name length and type
+  if (name && !validator.isByteLength(name, { min: 0, max: 50 })) {
+    message.push('Name can not be longer than 50 characters.')
+  }
+  // check introduction length and type
+  if (introduction && !validator.isByteLength(introduction, { min: 0, max: 160 })) {
+    message.push('Introduction can not be longer than 160 characters.')
+  }
+  return message
+}
 
-module.exports = { checkInputFormat, checkUserInfoEdit, checkUserInfo }
+module.exports = { checkInputFormat, checkUserInfoEdit, checkUserInfo, checkUserProfileEdit }
