@@ -96,41 +96,15 @@ const userController = {
     }).catch((err) => { next(err) })
   },
 
-  getUserReplies: async (req, res, next) => {
+  getUserReplies: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get user's replies data.'
-    try {
-      const UserId = req.params.id
-      const user = await User.findByPk(UserId)
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+    userService.getUserReplies(req, res, data => {
+      if (data.status === 'error: not found') {
+        return res.status(404).json(data)
       }
-
-      let replies = await Reply.findAll({
-        where: { UserId },
-        include: [User, { model: Tweet, include: User }],
-        order: [['createdAt', 'DESC']]
-      })
-      if (!replies) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find any replies in db.' })
-      }
-      replies = replies.map(reply => {
-        return {
-          id: reply.id,
-          UserId: reply.UserId,
-          TweetId: reply.TweetId,
-          tweetAuthorAccount: reply.Tweet.User.account,
-          comment: reply.comment,
-          createdAt: reply.createdAt,
-          commentAccount: reply.User.account,
-          name: reply.User.name,
-          avatar: reply.User.avatar
-        }
-      })
-      return res.status(200).json(replies)
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
 
   getUserLikes: (req, res, next) => {

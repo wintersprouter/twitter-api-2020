@@ -6,7 +6,7 @@ const helpers = require('../_helpers')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
-const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getUserTweetsData, getUserLikesData } = organizeData
+const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getTweetsData, getUserLikesData, getRepliesData } = organizeData
 const fromValidation = require('../utils/formValidation')
 const { checkUserInfoEdit, checkUserInfo, checkUserProfileEdit } = fromValidation
 
@@ -200,7 +200,7 @@ const userService = {
       if (!tweets) {
         return callback({ status: 'error: not found', message: 'Cannot find any tweets in db.' })
       }
-      const tweetsData = await getUserTweetsData(req, tweets)
+      const tweetsData = await getTweetsData(req, tweets)
       return callback(tweetsData)
     } catch (err) {
       console.log(err)
@@ -227,6 +227,30 @@ const userService = {
       }
       const likesData = await getUserLikesData(req, likes)
       return callback(likesData)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getUserReplies: async (req, res, callback) => {
+    try {
+      const UserId = req.params.id
+      const user = await User.findByPk(UserId)
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error: not found', message: 'Cannot find this user in db.' })
+      }
+
+      const replies = await Reply.findAll({
+        where: { UserId },
+        include: [User, { model: Tweet, include: User }],
+        order: [['createdAt', 'DESC']]
+      })
+
+      if (!replies) {
+        return callback({ status: 'error: not found', message: 'Cannot find any replies in db.' })
+      }
+
+      const repliesData = await getRepliesData(replies)
+      return callback(repliesData)
     } catch (err) {
       console.log(err)
     }

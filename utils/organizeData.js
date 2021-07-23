@@ -32,7 +32,7 @@ module.exports = {
     })
     return tweets
   },
-  getRepliesData: (req, replies) => {
+  getRepliesData: (replies) => {
     replies = replies.map(reply => {
       return {
         id: reply.id,
@@ -130,23 +130,6 @@ module.exports = {
       isFollowed: user.Followers.map(d => d.id).includes(req.user.id)
     }
     return user
-  },
-  getUserTweetsData: (req, tweets) => {
-    tweets = tweets.map(tweet => {
-      return {
-        id: tweet.id,
-        UserId: tweet.UserId,
-        description: tweet.description,
-        createdAt: tweet.createdAt,
-        account: tweet.User.account,
-        name: tweet.User.name,
-        avatar: tweet.User.avatar,
-        likedCount: tweet.Likes.length,
-        repliedCount: tweet.Replies.length,
-        isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
-      }
-    })
-    return tweets
   },
   getUserLikesData: (req, likes) => {
     likes = likes.map(like => {
