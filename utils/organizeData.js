@@ -112,6 +112,23 @@ module.exports = {
     users.status = 'success'
     users.message = 'Get top ten users successfully'
     return users
+  },
+  getUserData: (req, user) => {
+    user = {
+      status: 'success',
+      message: `Get @${user.account}'s  profile successfully.`,
+      id: user.dataValues.id,
+      name: user.dataValues.name,
+      account: user.account,
+      email: user.email,
+      avatar: user.avatar,
+      cover: user.cover,
+      introduction: user.introduction,
+      tweetCount: user.Tweets.length,
+      followerCount: user.Followers.length,
+      followingCount: user.Followings.length,
+      isFollowed: user.Followers.map(d => d.id).includes(req.user.id)
+    }
+    return user
   }
-
 }

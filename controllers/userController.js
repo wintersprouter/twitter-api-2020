@@ -58,45 +58,15 @@ const userController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  getUser: async (req, res, next) => {
+  getUser: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get a user's data.'
-    try {
-      const id = req.params.id
-      const user = await User.findOne({
-        where: {
-          id: id
-        },
-        include: [
-          { model: Tweet },
-          { model: User, as: 'Followers' },
-          { model: User, as: 'Followings' }
-        ]
-      })
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+    userService.getUser(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      const data = {
-        status: 'success',
-        message: `Get @${user.account}'s  profile successfully.`,
-        id: user.dataValues.id,
-        name: user.dataValues.name,
-        account: user.account,
-        email: user.email,
-        avatar: user.avatar,
-        cover: user.cover,
-        introduction: user.introduction,
-        tweetCount: user.Tweets.length,
-        followerCount: user.Followers.length,
-        followingCount: user.Followings.length,
-        isFollowed: user.Followers.map(d => d.id).includes(req.user.id)
-      }
-      return res.status(200).json(
-        data
-      )
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   editUserProfile: async (req, res, next) => {
     // #swagger.tags = ['Users']
