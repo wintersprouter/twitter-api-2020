@@ -42,67 +42,21 @@ const userController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  editAccount: async (req, res, next) => {
+  editAccount: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Edit user's account information.'
-    try {
-      const { account, name, email, password, checkPassword } = req.body
-      const { email: currentEmail, account: currentAccount } = req.user
-      const id = req.params.id
-      // only user himself allow to edit account
-      if (req.user.id !== Number(id)) {
-        return res.status(401).json({ status: 'error', message: 'Permission denied.' })
+    userService.editAccount(req, res, data => {
+      if (data.status === 'error: bad request') {
+        return res.status(400).json(data)
       }
-      // check this user is or not in db
-      const user = await User.findByPk(id)
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+      if (data.status === 'error: not found') {
+        return res.status(404).json(data)
       }
-      const message = []
-      // check all inputs are required
-      if (!account || !name || !email || !password || !checkPassword) {
-        message.push('All fields are required！')
+      if (data.status === 'error: unauthorized') {
+        return res.status(401).json(data)
       }
-      // check name length and type
-      if (name && !validator.isByteLength(name, { min: 0, max: 50 })) {
-        message.push('Name can not be longer than 50 characters.')
-      }
-      // check account length and type
-      if (account && !validator.isByteLength(account, { min: 0, max: 20 })) {
-        message.push('Account can not be longer than 20 characters.')
-      }
-      // check email validation
-      if (email && !validator.isEmail(email)) {
-        message.push(`${email} is not a valid email address.`)
-      }
-      // check password length and type
-      if (password && !validator.isByteLength(password, { min: 5, max: 15 })) {
-        message.push('Password does not meet the required length.')
-      }
-      // check password and checkPassword
-      if (password && (password !== checkPassword)) {
-        message.push('The password and confirmation do not match.Please retype them.')
-      }
-      if (email !== currentEmail) {
-        const userEmail = await User.findOne({ where: { email } })
-        if (userEmail) {
-          message.push('This email address is already being used.')
-        }
-      }
-      if (account !== currentAccount) {
-        const userAccount = await User.findOne({ where: { account } })
-        if (userAccount) {
-          message.push('This account is already being used.')
-        }
-      }
-      if (message.length) {
-        return res.status(400).json({ status: 'error', message })
-      }
-      await user.update({ name, password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)), email, account })
-      return res.status(200).json({ status: 'success', message: `@${account} Update account information successfully.` })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   getUser: async (req, res, next) => {
     // #swagger.tags = ['Users']

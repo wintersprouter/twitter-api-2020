@@ -7,8 +7,8 @@ const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
 const { getSignInData, getCurrentUserData, getTopUsersData } = organizeData
-const fromValidation = require('../utils/fromValidation')
-const { checkUserInfo } = fromValidation
+const fromValidation = require('../utils/formValidation')
+const { checkUserInfoEdit, checkUserInfo } = fromValidation
 
 const uploadImg = path => {
   return new Promise((resolve, reject) => {
@@ -89,6 +89,31 @@ const userService = {
       }
       const usersData = await getTopUsersData(req, users)
       return callback(usersData)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  editAccount: async (req, res, callback) => {
+    try {
+      const { account, name, email, password } = req.body
+      const id = req.params.id
+      await checkUserInfoEdit
+      // only user himself allow to edit account
+      if (req.user.id !== Number(id)) {
+        return res.status(401).json({ status: 'error: unauthorized', message: 'Permission denied.' })
+      }
+      // check this user is or not in db
+      const user = await User.findByPk(id)
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error: not found', message: 'Cannot find this user in db.' })
+      }
+      const message = []
+      await checkUserInfoEdit(req, message)
+      if (message.length) {
+        return callback({ status: 'error: bad request', message })
+      }
+      await user.update({ name, password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)), email, account })
+      return callback({ status: 'success', message: `@${account} Update account information successfully.` })
     } catch (err) {
       console.log(err)
     }
