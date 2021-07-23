@@ -6,7 +6,7 @@ const helpers = require('../_helpers')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
-const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getUserTweetsData } = organizeData
+const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getUserTweetsData, getUserLikesData } = organizeData
 const fromValidation = require('../utils/formValidation')
 const { checkUserInfoEdit, checkUserInfo, checkUserProfileEdit } = fromValidation
 
@@ -202,6 +202,31 @@ const userService = {
       }
       const tweetsData = await getUserTweetsData(req, tweets)
       return callback(tweetsData)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getUserLikes: async (req, res, callback) => {
+    try {
+      const UserId = req.params.id
+      const user = await User.findByPk(UserId)
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error: not found', message: 'Cannot find this user in db.' })
+      }
+      const likes = await Like.findAll({
+        where: { UserId },
+        include: [{
+          model: Tweet,
+          include: [{ model: User },
+            { model: Reply, include: [{ model: User }] }, Like]
+        }],
+        order: [['createdAt', 'DESC']]
+      })
+      if (!likes) {
+        return callback({ status: 'error: not found', message: 'Cannot find any liked tweets in db.' })
+      }
+      const likesData = await getUserLikesData(req, likes)
+      return callback(likesData)
     } catch (err) {
       console.log(err)
     }

@@ -133,47 +133,15 @@ const userController = {
     }
   },
 
-  getUserLikes: async (req, res, next) => {
+  getUserLikes: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get user's liked tweets data.'
-    try {
-      const UserId = req.params.id
-      const user = await User.findByPk(UserId)
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+    userService.getUserLikes(req, res, data => {
+      if (data.status === 'error: not found') {
+        return res.status(404).json(data)
       }
-      let likes = await Like.findAll({
-        where: { UserId },
-        include: [{
-          model: Tweet,
-          include: [{ model: User },
-            { model: Reply, include: [{ model: User }] }, Like]
-        }],
-        order: [['createdAt', 'DESC']]
-      })
-      if (!likes) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find any liked tweets in db.' })
-      }
-      likes = likes.map(like => {
-        return {
-          id: like.id,
-          UserId: like.UserId,
-          TweetId: like.TweetId,
-          likeCreatedAt: like.createdAt,
-          account: like.Tweet.User.account,
-          name: like.Tweet.User.name,
-          avatar: like.Tweet.User.avatar,
-          description: like.Tweet.description,
-          tweetCreatedAt: like.Tweet.createdAt,
-          likedCount: like.Tweet.Likes.length,
-          repliedCount: like.Tweet.Replies.length,
-          isLike: like.Tweet.Likes.some((t) => t.UserId === req.user.id)
-        }
-      })
-      return res.status(200).json(likes)
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
 
   getUserFollowings: async (req, res, next) => {

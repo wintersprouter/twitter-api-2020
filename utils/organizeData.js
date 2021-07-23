@@ -147,5 +147,24 @@ module.exports = {
       }
     })
     return tweets
+  },
+  getUserLikesData: (req, likes) => {
+    likes = likes.map(like => {
+      return {
+        id: like.id,
+        UserId: like.UserId,
+        TweetId: like.TweetId,
+        likeCreatedAt: like.createdAt,
+        account: like.Tweet.User.account,
+        name: like.Tweet.User.name,
+        avatar: like.Tweet.User.avatar,
+        description: like.Tweet.description,
+        tweetCreatedAt: like.Tweet.createdAt,
+        likedCount: like.Tweet.Likes.length,
+        repliedCount: like.Tweet.Replies.length,
+        isLike: like.Tweet.Likes.some((t) => t.UserId === req.user.id)
+      }
+    })
+    return likes
   }
 }
