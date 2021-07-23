@@ -14,8 +14,7 @@ const adminController = {
   deleteTweet: (req, res, next) => {
     // #swagger.tags = ['Admin']
     // #swagger.description = 'Delete a tweet.'
-    adminService.deleteTweet
-    (req, res, data => {
+    adminService.deleteTweet(req, res, data => {
       if (data.status === 'error') {
         return res.status(401).json(data)
       }

@@ -16,7 +16,7 @@ module.exports = {
     }
   },
   getTweetsData: (req, tweets) => {
-    return tweets = tweets.map(tweet => {
+    tweets = tweets.map(tweet => {
       return {
         id: tweet.id,
         UserId: tweet.UserId,
@@ -30,9 +30,10 @@ module.exports = {
         isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
       }
     })
+    return tweets
   },
   getRepliesData: (req, replies) => {
-    return replies = replies.map(reply => {
+    replies = replies.map(reply => {
       return {
         id: reply.id,
         UserId: reply.UserId,
@@ -45,6 +46,7 @@ module.exports = {
         avatar: reply.User.avatar
       }
     })
+    return replies
   },
   getUsersData: (req, users) => {
     users = users.map(user => {
@@ -68,7 +70,7 @@ module.exports = {
     return users
   },
   getSignInData: (token, user) => {
-    getSignInUser = {
+    user = {
       status: 'success',
       message: 'Sign in successfully.',
       token: token,
@@ -82,6 +84,20 @@ module.exports = {
         role: user.role
       }
     }
-    return getSignInUser
+    return user
+  },
+  getCurrentUserData: (req) => {
+    req = {
+      id: req.user.id,
+      name: req.user.name,
+      account: req.user.account,
+      email: req.user.email,
+      avatar: req.user.avatar,
+      role: req.user.role,
+      cover: req.user.cover,
+      introduction: req.user.introduction
+    }
+    return req
   }
+
 }

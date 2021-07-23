@@ -42,7 +42,7 @@ const userService = {
       const payload = { id: user.id }
       const token = jwt.sign(payload, process.env.JWT_SECRET)
       await getSignInData(token, user)
-      return callback(getSignInUser)
+      return callback(user)
     } catch (err) {
       console.log(err)
     }
@@ -63,6 +63,14 @@ const userService = {
         password: bcrypt.hashSync(password, bcrypt.genSaltSync(10), null)
       })
       return callback({ status: 'success', message: `@${account} sign up successfully.Please sign in.` })
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getCurrentUser: async (req, res, callback) => {
+    try {
+      await getCurrentUserData(req)
+      return callback(req)
     } catch (err) {
       console.log(err)
     }

@@ -28,16 +28,9 @@ const userController = {
   getCurrentUser: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get current user's data.'
-    return res.status(200).json({
-      id: req.user.id,
-      name: req.user.name,
-      account: req.user.account,
-      email: req.user.email,
-      avatar: req.user.avatar,
-      role: req.user.role,
-      cover: req.user.cover,
-      introduction: req.user.introduction
-    })
+    userService.getCurrentUser(req, res, data => {
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   getTopUsers: async (req, res, next) => {
     // #swagger.tags = ['Users']
