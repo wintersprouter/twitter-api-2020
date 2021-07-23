@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
-const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getTweetsData, getUserLikesData, getRepliesData, getFollowingsData } = organizeData
+const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getTweetsData, getUserLikesData, getRepliesData, getFollowingsData, getFollowersData } = organizeData
 const fromValidation = require('../utils/formValidation')
 const { checkUserInfoEdit, checkUserInfo, checkUserProfileEdit } = fromValidation
 
@@ -101,7 +101,7 @@ const userService = {
       await checkUserInfoEdit
       // only user himself allow to edit account
       if (req.user.id !== Number(id)) {
-        return res.status(401).json({ status: 'error: unauthorized', message: 'Permission denied.' })
+        return callback({ status: 'error: unauthorized', message: 'Permission denied.' })
       }
       // check this user is or not in db
       const user = await User.findByPk(id)
@@ -135,7 +135,7 @@ const userService = {
       if (!user || user.role === 'admin') {
         return callback({ status: 'error', message: 'Cannot find this user in db.' })
       }
-      const userData = await getUserData(req, user)
+      const userData = await getUserData(user)
       return callback(userData)
     } catch (err) {
       console.log(err)
@@ -272,6 +272,27 @@ const userService = {
       }
       const followingsData = await getFollowingsData(req, user)
       return callback(followingsData)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getUserFollowers: async (req, res, callback) => {
+    try {
+      const user = await User.findByPk(req.params.id,
+        {
+          include: [
+            { model: User, as: 'Followers' }
+          ],
+          order: [['Followers', Followship, 'createdAt', 'DESC']]
+        })
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error', message: 'Cannot find this user in db.' })
+      }
+      if (!user.Followers.length) {
+        return callback({ status: 'success', message: `@${user.account} has no follower.` })
+      }
+      const followersData = await getFollowersData(req, user)
+      return callback(followersData)
     } catch (err) {
       console.log(err)
     }

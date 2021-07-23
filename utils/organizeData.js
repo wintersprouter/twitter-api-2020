@@ -49,7 +49,7 @@ module.exports = {
     })
     return replies
   },
-  getUsersData: (req, users) => {
+  getUsersData: (users) => {
     users = users.map(user => {
       let likedCount = 0
       user.Tweets.forEach(tweet => {
@@ -160,6 +160,18 @@ module.exports = {
       introduction: following.introduction,
       followshipCreatedAt: following.Followship.createdAt,
       isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(following.id)
+    }))
+    return user
+  },
+  getFollowersData: (req, user) => {
+    user = user.Followers.map(follower => ({
+      followerId: follower.id,
+      account: follower.account,
+      name: follower.name,
+      avatar: follower.avatar,
+      introduction: follower.introduction,
+      followshipCreatedAt: follower.Followship.createdAt,
+      isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(follower.id)
     }))
     return user
   }

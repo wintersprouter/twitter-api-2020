@@ -131,33 +131,12 @@ const userController = {
   getUserFollowers: async (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get user's followers data.'
-    try {
-      let user = await User.findByPk(req.params.id,
-        {
-          include: [
-            { model: User, as: 'Followers' }
-          ],
-          order: [['Followers', Followship, 'createdAt', 'DESC']]
-        })
-      if (!user || user.role === 'admin') {
-        return res.status(404).json({ status: 'error', message: 'Cannot find this user in db.' })
+    userService.getUserFollowers(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      if (!user.Followers.length) {
-        return res.status(200).json({ message: `@${user.account} has no follower.` })
-      }
-      user = user.Followers.map(follower => ({
-        followerId: follower.id,
-        account: follower.account,
-        name: follower.name,
-        avatar: follower.avatar,
-        introduction: follower.introduction,
-        followshipCreatedAt: follower.Followship.createdAt,
-        isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(follower.id)
-      }))
-      return res.status(200).json(user)
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   }
 }
 
