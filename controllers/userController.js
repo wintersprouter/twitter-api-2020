@@ -32,37 +32,15 @@ const userController = {
       return res.status(200).json(data)
     }).catch((err) => { next(err) })
   },
-  getTopUsers: async (req, res, next) => {
+  getTopUsers: (req, res, next) => {
     // #swagger.tags = ['Users']
     // #swagger.description = 'Get top ten users data.'
-    try {
-      let users = await User.findAll({
-        where: { role: 'user' },
-        include: [
-          { model: User, as: 'Followers' }
-        ],
-        limit: 10
-      })
-      if (!users) {
-        return res.status(404).json({ status: 'error', message: 'Cannot find any user in db.' })
+    userService.getTopUsers(req, res, data => {
+      if (data.status === 'error') {
+        return res.status(404).json(data)
       }
-      users = users.map(user => ({
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-        account: user.account,
-        followerCount: user.Followers.length,
-        isFollowed: req.user.Followings.map(d => d.id).includes(user.id)
-      }))
-      users = users.sort((a, b) => b.followerCount - a.followerCount)
-      return res.status(200).json({
-        status: 'success',
-        message: 'Get top ten users successfully',
-        users
-      })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   editAccount: async (req, res, next) => {
     // #swagger.tags = ['Users']

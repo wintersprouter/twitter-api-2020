@@ -98,6 +98,20 @@ module.exports = {
       introduction: req.user.introduction
     }
     return req
+  },
+  getTopUsersData: (req, users) => {
+    users = users.map(user => ({
+      id: user.id,
+      name: user.name,
+      avatar: user.avatar,
+      account: user.account,
+      followerCount: user.Followers.length,
+      isFollowed: req.user.Followings.map(d => d.id).includes(user.id)
+    }))
+    users = users.sort((a, b) => b.followerCount - a.followerCount)
+    users.status = 'success'
+    users.message = 'Get top ten users successfully'
+    return users
   }
 
 }

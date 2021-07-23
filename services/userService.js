@@ -6,7 +6,7 @@ const helpers = require('../_helpers')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
-const { getSignInData } = organizeData
+const { getSignInData, getCurrentUserData, getTopUsersData } = organizeData
 const fromValidation = require('../utils/fromValidation')
 const { checkUserInfo } = fromValidation
 
@@ -69,8 +69,26 @@ const userService = {
   },
   getCurrentUser: async (req, res, callback) => {
     try {
-      await getCurrentUserData(req)
-      return callback(req)
+      const currentUser = await getCurrentUserData(req)
+      return callback(currentUser)
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getTopUsers: async (req, res, callback) => {
+    try {
+      const users = await User.findAll({
+        where: { role: 'user' },
+        include: [
+          { model: User, as: 'Followers' }
+        ],
+        limit: 10
+      })
+      if (!users) {
+        return callback({ status: 'error', message: 'Cannot find any user in db.' })
+      }
+      const usersData = await getTopUsersData(req, users)
+      return callback(usersData)
     } catch (err) {
       console.log(err)
     }
