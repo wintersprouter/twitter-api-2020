@@ -1,62 +1,18 @@
-const db = require('../models')
-const { User, Tweet, Reply, Like, Followship } = db
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
-const helpers = require('../_helpers')
-const imgur = require('imgur-node-api')
-const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
-
-const uploadImg = path => {
-  return new Promise((resolve, reject) => {
-    imgur.upload(path, (err, img) => {
-      if (err) {
-        return reject('error happened')
-      }
-      resolve(img)
-    })
-  })
-}
-
-// JWT
-const jwt = require('jsonwebtoken')
-const passportJWT = require('passport-jwt')
-const ExtractJwt = passportJWT.ExtractJwt
-const JwtStrategy = passportJWT.Strategy
+const userService = require('../services/userService')
 
 const userController = {
-  signIn: async (req, res, next) => {
+  signIn: (req, res, next) => {
     // #swagger.tags = ['SignUp/Signin']
     // #swagger.description = 'User and admin sign in.'
-    try {
-      // check all inputs are required
-      const { account, password } = req.body
-      if (!account || !password) {
-        return res.status(422).json({ status: 'error', message: 'All fields are required!' })
+    userService.signIn(req, res, data => {
+      if (data.status === 'error: bad request') {
+        return res.status(400).json(data)
       }
-      const user = await User.findOne({ where: { account } })
-      if (!user) return res.status(401).json({ status: 'error', message: 'That account is not registered!' })
-      if (!bcrypt.compareSync(password, user.password)) {
-        return res.status(401).json({ status: 'error', message: 'Account or Password incorrect.' })
+      if (data.status === 'error: unauthorized') {
+        return res.status(401).json(data)
       }
-      const payload = { id: user.id }
-      const token = jwt.sign(payload, process.env.JWT_SECRET)
-      return res.status(200).json({
-        status: 'success',
-        message: 'Sign in successfully.',
-        token: token,
-        user: {
-          id: user.id,
-          account: user.account,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
-          cover: user.cover,
-          role: user.role
-        }
-      })
-    } catch (err) {
-      next(err)
-    }
+      return res.status(200).json(data)
+    }).catch((err) => { next(err) })
   },
   signUp: async (req, res, next) => {
     // #swagger.tags = ['SignUp/Signin']

@@ -66,5 +66,22 @@ module.exports = {
     })
     users.sort((a, b) => b.tweetCount - a.tweetCount)
     return users
+  },
+  getSignInData: (token, user) => {
+    getSignInUser = {
+      status: 'success',
+      message: 'Sign in successfully.',
+      token: token,
+      user: {
+        id: user.id,
+        account: user.account,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        cover: user.cover,
+        role: user.role
+      }
+    }
+    return getSignInUser
   }
 }
