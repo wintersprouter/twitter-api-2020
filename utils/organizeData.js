@@ -1,3 +1,4 @@
+const helpers = require('../_helpers')
 module.exports = {
   getTweetData: (req, tweet) => {
     return {
@@ -16,7 +17,7 @@ module.exports = {
     }
   },
   getTweetsData: (req, tweets) => {
-    return tweets = tweets.map(tweet => {
+    tweets = tweets.map(tweet => {
       return {
         id: tweet.id,
         UserId: tweet.UserId,
@@ -30,9 +31,10 @@ module.exports = {
         isLike: tweet.LikedUsers.map(t => t.id).includes(req.user.id)
       }
     })
+    return tweets
   },
-  getRepliesData: (req, replies) => {
-    return replies = replies.map(reply => {
+  getRepliesData: (replies) => {
+    replies = replies.map(reply => {
       return {
         id: reply.id,
         UserId: reply.UserId,
@@ -45,8 +47,9 @@ module.exports = {
         avatar: reply.User.avatar
       }
     })
+    return replies
   },
-  getUsersData: (req, users) => {
+  getUsersData: (users) => {
     users = users.map(user => {
       let likedCount = 0
       user.Tweets.forEach(tweet => {
@@ -66,5 +69,110 @@ module.exports = {
     })
     users.sort((a, b) => b.tweetCount - a.tweetCount)
     return users
+  },
+  getSignInData: (token, user) => {
+    user = {
+      status: 'success',
+      message: 'Sign in successfully.',
+      token: token,
+      user: {
+        id: user.id,
+        account: user.account,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        cover: user.cover,
+        role: user.role
+      }
+    }
+    return user
+  },
+  getCurrentUserData: (req) => {
+    req = {
+      id: req.user.id,
+      name: req.user.name,
+      account: req.user.account,
+      email: req.user.email,
+      avatar: req.user.avatar,
+      role: req.user.role,
+      cover: req.user.cover,
+      introduction: req.user.introduction
+    }
+    return req
+  },
+  getTopUsersData: (req, users) => {
+    users = users.map(user => ({
+      id: user.id,
+      name: user.name,
+      avatar: user.avatar,
+      account: user.account,
+      followerCount: user.Followers.length,
+      isFollowed: req.user.Followings.map(d => d.id).includes(user.id)
+    }))
+    users = users.sort((a, b) => b.followerCount - a.followerCount)
+    users.status = 'success'
+    users.message = 'Get top ten users successfully'
+    return users
+  },
+  getUserData: (req, user) => {
+    user = {
+      status: 'success',
+      message: `Get @${user.account}'s  profile successfully.`,
+      id: user.dataValues.id,
+      name: user.dataValues.name,
+      account: user.account,
+      email: user.email,
+      avatar: user.avatar,
+      cover: user.cover,
+      introduction: user.introduction,
+      tweetCount: user.Tweets.length,
+      followerCount: user.Followers.length,
+      followingCount: user.Followings.length,
+      isFollowed: user.Followers.map(d => d.id).includes(req.user.id)
+    }
+    return user
+  },
+  getUserLikesData: (req, likes) => {
+    likes = likes.map(like => {
+      return {
+        id: like.id,
+        UserId: like.UserId,
+        TweetId: like.TweetId,
+        likeCreatedAt: like.createdAt,
+        account: like.Tweet.User.account,
+        name: like.Tweet.User.name,
+        avatar: like.Tweet.User.avatar,
+        description: like.Tweet.description,
+        tweetCreatedAt: like.Tweet.createdAt,
+        likedCount: like.Tweet.Likes.length,
+        repliedCount: like.Tweet.Replies.length,
+        isLike: like.Tweet.Likes.some((t) => t.UserId === req.user.id)
+      }
+    })
+    return likes
+  },
+  getFollowingsData: (req, user) => {
+    user = user.Followings.map(following => ({
+      followingId: following.id,
+      account: following.account,
+      name: following.name,
+      avatar: following.avatar,
+      introduction: following.introduction,
+      followshipCreatedAt: following.Followship.createdAt,
+      isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(following.id)
+    }))
+    return user
+  },
+  getFollowersData: (req, user) => {
+    user = user.Followers.map(follower => ({
+      followerId: follower.id,
+      account: follower.account,
+      name: follower.name,
+      avatar: follower.avatar,
+      introduction: follower.introduction,
+      followshipCreatedAt: follower.Followship.createdAt,
+      isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(follower.id)
+    }))
+    return user
   }
 }

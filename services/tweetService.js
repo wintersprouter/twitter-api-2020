@@ -19,7 +19,6 @@ const tweetService = {
         return callback({ status: 'error', message: 'Cannot find any tweets in db.' })
       }
       const tweetsData = await getTweetsData(req, tweets)
-      tweetsData.status = 'success'
       return callback(tweetsData)
     } catch (err) {
       console.log(err)
@@ -83,8 +82,7 @@ const tweetService = {
       if (!replies) {
         return callback({ status: 'error', message: 'Cannot find any replies in db.' })
       }
-      const repliesData = await getRepliesData(req, replies)
-      repliesData.status = 'success'
+      const repliesData = await getRepliesData(replies)
       return callback(repliesData)
     } catch (err) {
       console.log(err)
@@ -139,8 +137,6 @@ const tweetService = {
     }
   },
   postUnlike: async (req, res, callback) => {
-    // #swagger.tags = ['Likes']
-    // #swagger.description = 'Post an unlike.'
     try {
       const TweetId = req.params.id
       const UserId = req.user.id
