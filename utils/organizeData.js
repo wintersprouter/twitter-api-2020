@@ -1,3 +1,4 @@
+const helpers = require('../_helpers')
 module.exports = {
   getTweetData: (req, tweet) => {
     return {
@@ -149,5 +150,17 @@ module.exports = {
       }
     })
     return likes
+  },
+  getFollowingsData: (req, user) => {
+    user = user.Followings.map(following => ({
+      followingId: following.id,
+      account: following.account,
+      name: following.name,
+      avatar: following.avatar,
+      introduction: following.introduction,
+      followshipCreatedAt: following.Followship.createdAt,
+      isFollowed: helpers.getUser(req).Followings.map(f => f.id).includes(following.id)
+    }))
+    return user
   }
 }

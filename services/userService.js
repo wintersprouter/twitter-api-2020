@@ -1,12 +1,12 @@
 const db = require('../models')
 const { User, Tweet, Reply, Like, Followship } = db
-const validator = require('validator')
+
 const bcrypt = require('bcryptjs')
-const helpers = require('../_helpers')
+
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
 const organizeData = require('../utils/organizeData')
-const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getTweetsData, getUserLikesData, getRepliesData } = organizeData
+const { getSignInData, getCurrentUserData, getTopUsersData, getUserData, getTweetsData, getUserLikesData, getRepliesData, getFollowingsData } = organizeData
 const fromValidation = require('../utils/formValidation')
 const { checkUserInfoEdit, checkUserInfo, checkUserProfileEdit } = fromValidation
 
@@ -26,6 +26,7 @@ const jwt = require('jsonwebtoken')
 const passportJWT = require('passport-jwt')
 const ExtractJwt = passportJWT.ExtractJwt
 const JwtStrategy = passportJWT.Strategy
+
 const userService = {
   signIn: async (req, res, callback) => {
     try {
@@ -254,7 +255,26 @@ const userService = {
     } catch (err) {
       console.log(err)
     }
+  },
+  getUserFollowings: async (req, res, callback) => {
+    try {
+      const user = await User.findByPk(req.params.id,
+        {
+          include: [
+            { model: User, as: 'Followings' }],
+          order: [['Followings', Followship, 'createdAt', 'DESC']]
+        })
+      if (!user || user.role === 'admin') {
+        return callback({ status: 'error', message: 'Cannot find this user in db.' })
+      }
+      if (!user.Followings.length) {
+        return callback({ status: 'success', message: `@${user.account} has no following.` })
+      }
+      const followingsData = await getFollowingsData(req, user)
+      return callback(followingsData)
+    } catch (err) {
+      console.log(err)
+    }
   }
-
 }
 module.exports = userService
