@@ -23,8 +23,8 @@ module.exports = {
       next(new Error('Authentication error'))
     }
   },
-  getUserInfo:async (socket) => {
-    try{
+  getUserInfo: async (socket) => {
+    try {
       const user = await User.findByPk(socket.userId, {
         attributes: ['id', 'name', 'account', 'avatar', 'role']
       })
@@ -33,8 +33,20 @@ module.exports = {
         socket.user.socketId = socket.id
         return user
       }
-      } catch (err) {
+    } catch (err) {
       console.log(err)
     }
+  },
+  generateActiveUsers: async (onlineUser, activeUsers) => {
+    try {
+      if (activeUsers.map(u => u.id).includes(onlineUser.id)) {
+        console.log('This user already existed.')
+      } else {
+        activeUsers.push(onlineUser)
+        return activeUsers
+      }
+    } catch (err) {
+      console.log(err)
     }
+  }
 }
