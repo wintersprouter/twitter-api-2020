@@ -17,7 +17,6 @@ module.exports = {
           console.log(err)
         }
       })
-      next()
     } else {
       next(new Error('Authentication error'))
     }
