@@ -48,5 +48,18 @@ module.exports = {
     } catch (err) {
       console.log(err)
     }
+  },
+  saveMessage: async (data, socket) => {
+    try {
+      let message = await Message.create({
+        content: data,
+        UserId: socket.userId,
+        createdAt: Date.now()
+      })
+      message = message.dataValues
+      return message
+    } catch (err) {
+      console.log(err)
+    }
   }
 }

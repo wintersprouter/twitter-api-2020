@@ -1,7 +1,5 @@
-const db = require('../models')
-const { Message } = db
 const activeUsers = []
-const { socketAuthenticated, getUserInfo, generateActiveUsers } = require('./functions')
+const { socketAuthenticated, getUserInfo, generateActiveUsers, saveMessage } = require('./functions')
 
 module.exports = (io) => {
   io.use(socketAuthenticated).on('connection', async socket => {
@@ -42,30 +40,21 @@ module.exports = (io) => {
         console.log('notification', data)
       })
       socket.on('sendMessage', async (data) => {
-        console.log('sendMessage socket.user', socket.user)
         try {
-          if (data) {
-            const message = await Message.create({
-              content: data,
-              UserId: socket.userId,
-              createdAt: Date.now()
-            })
-            // 傳送使用者和訊息
-            console.log('message: ', message.toJSON())
-            console.log('message content: ', data)
-            const createdMessage = message.toJSON()
-            const newInfo = {
-              id: createdMessage.id,
-              UserId: socket.userId,
-              content: data,
-              createdAt: createdMessage.createdAt,
-              account: socket.user.account,
-              name: socket.user.name,
-              avatar: socket.user.avatar
-            }
-            console.log('newInfo', newInfo)
-            io.emit('newMessage', newInfo)
+          if (!data) { return }
+
+          const newMessage = await saveMessage(data, socket)
+
+          await getUserInfo(socket)
+          const author = socket.user
+
+          const newMessageInfo = {
+            message: newMessage,
+            author: author
           }
+          console.log(newMessageInfo)
+
+          io.emit('newMessage', newMessageInfo)
         } catch (err) { console.log(err) }
       })
     } catch (err) {
