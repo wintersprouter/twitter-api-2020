@@ -1,5 +1,5 @@
 const activeUsers = []
-const { socketAuthenticated, getUserInfo, generateActiveUsers, saveMessage } = require('./functions')
+const { socketAuthenticated, getUserInfo, generateActiveUsers, saveMessage, removeDisconnectUser } = require('./functions')
 
 module.exports = (io) => {
   io.use(socketAuthenticated).on('connection', async socket => {
@@ -27,8 +27,7 @@ module.exports = (io) => {
         console.log('disconnect', socket.user)
 
         const offlineUser = socket.user
-        const activeUsersIndex = activeUsers.map(u => u.id).indexOf(offlineUser.id)
-        activeUsers.splice(activeUsersIndex, 1)
+        await removeDisconnectUser(activeUsers, offlineUser)
 
         const data = { online: false, onlineUser }
         const activeData = { activeUsersCount: activeUsers.length, activeUsers }

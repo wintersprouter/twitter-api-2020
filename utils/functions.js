@@ -61,5 +61,10 @@ module.exports = {
     } catch (err) {
       console.log(err)
     }
+  },
+  removeDisconnectUser: (activeUsers, offlineUser) => {
+    const activeUsersIndex = activeUsers.map(u => u.id).indexOf(offlineUser.id)
+    activeUsers.splice(activeUsersIndex, 1)
+    return activeUsers
   }
 }
