@@ -36,7 +36,7 @@ const io = require('socket.io')(server, {
   allowEIO3: true
 })
 
-require('./config/socketServer')(io)
+require('./utils/socketServer')(io)
 
 server.listen(port, () => console.log(`Example server listening on port http://localhost:${port}`))
 

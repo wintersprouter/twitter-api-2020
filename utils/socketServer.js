@@ -2,11 +2,12 @@ const db = require('../models')
 const { Message, User } = db
 const activeUsers = []
 let activeUsersCount = 0
-const { socketAuthenticated } = require('../config/functions')
+const { socketAuthenticated } = require('./functions')
 
 module.exports = (io) => {
   io.use(socketAuthenticated).on('connection', async socket => {
     try {
+      const version = socket.conn.protocol;
       console.log('connection', socket.userId)
       const user = await User.findByPk(socket.userId, {
         attributes: ['id', 'name', 'account', 'avatar', 'role']

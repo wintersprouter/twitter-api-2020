@@ -21,5 +21,6 @@ module.exports = {
     } else {
       next(new Error('Authentication error'))
     }
-  }
+  },
+
 }
