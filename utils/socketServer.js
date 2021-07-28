@@ -2,34 +2,24 @@ const db = require('../models')
 const { Message, User } = db
 const activeUsers = []
 let activeUsersCount = 0
-const { socketAuthenticated } = require('./functions')
+const { socketAuthenticated,getUserInfo } = require('./functions')
 
 module.exports = (io) => {
   io.use(socketAuthenticated).on('connection', async socket => {
     try {
-      const version = socket.conn.protocol;
       console.log('connection', socket.userId)
-      const user = await User.findByPk(socket.userId, {
-        attributes: ['id', 'name', 'account', 'avatar', 'role']
-      })
-      if (user) {
-        socket.userId = user.dataValues.id
-        socket.user = user.dataValues
-        socket.user.socketId = socket.id
-        console.log('socket.userId', user.dataValues.id)
-        console.log('socket.user', user.dataValues)
-        console.log('socket.user.socketId', socket.id)
-      }
-      console.log('onlineUser', socket.user)
+      await getUserInfo(socket)
       const onlineUser = socket.user
-      if (activeUsers.map(u => u.id).includes(user.id)) {
-        console.log('This user already existed.')
-        activeUsersCount = activeUsers.length
-        return activeUsersCount
-      } else {
-        activeUsers.push(onlineUser)
-        activeUsersCount++
-      }
+      console.log('onlineUser', onlineUser)
+      
+      // if (activeUsers.map(u => u.id).includes(user.id)) {
+      //   console.log('This user already existed.')
+      //   activeUsersCount = activeUsers.length
+      //   return activeUsersCount
+      // } else {
+      //   activeUsers.push(onlineUser)
+      //   activeUsersCount++
+      // }
       console.log('activeUsers', activeUsers)
       const activeData = { activeUsersCount, activeUsers }
       console.log('activeData', activeData)

@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken')
+const db = require('../models')
+const { Message, User } = db
 module.exports = {
   randomDate: (start, end) => {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
@@ -21,5 +23,18 @@ module.exports = {
       next(new Error('Authentication error'))
     }
   },
-
+  getUserInfo:async (socket) => {
+    try{
+      const user = await User.findByPk(socket.userId, {
+        attributes: ['id', 'name', 'account', 'avatar', 'role']
+      })
+      if (user) {
+        socket.user = user.dataValues
+        socket.user.socketId = socket.id
+        return user
+      }
+      } catch (err) {
+      console.log(err)
+    }
+    }
 }
